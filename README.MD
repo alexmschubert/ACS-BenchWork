@@ -7,6 +7,8 @@ This repository contains code and data for the paper:
 **Diagnosis of Acute Coronary Syndrome using ECG Waveforms: A Machine Learning Framework and Benchmark Dataset**  
 *Alexander Schubert, Ziad Obermeyer*
 
+[Model weights available here](https://huggingface.co/alex-schubert/ACS-benchmark)
+
 ## Summary
 
 Electrocardiograms (ECGs) are central to the diagnosis of acute coronary syndromes (ACS). Classical ECG features such as ST-elevation or depression, discovered over 100 years ago, remain widely used to diagnose ACS—despite mounting evidence they are neither sensitive nor specific. Artificial intelligence (AI) could improve ECG diagnosis of ACS. But existing AI-ready datasets contain only cardiologists’ judgments on whether classical features are present in the ECG, not patient health outcomes related to ACS.
