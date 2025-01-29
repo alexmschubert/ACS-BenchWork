@@ -1,4 +1,4 @@
-![Banner](assets/Challenge_logo_bwh_acs.png)
+![Banner](assets/ACS_leaderboard_banner.png)
 
 # ACS-BenchWork
 
