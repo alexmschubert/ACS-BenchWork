@@ -70,7 +70,7 @@ The dataset is freely available via the [Nightingale Open Science platform](http
 
 ## Data access
 
-Data for this project is hosted on the [Nightingale Open Science](https://docs.ngsci.org/) cloud platform, allowing researchers to train or finetune their models in a standard Amazon Web Services environment. Researchers receive access to the full public dataset (including tested and untested patients), along with holdout ECG waveforms that lack labels or additional metadata. Models can be applied to these holdout waveforms to generate a CSV file of ECG IDs and predictions, which is then uploaded to the Hugging Face competition platform **[LINK TO BE PROVIDED]**. The platform evaluates the predictions against hidden labels, providing performance metrics for both ACS and MACE tasks.
+Data for this project is hosted on the [Nightingale Open Science](https://docs.ngsci.org/) cloud platform, allowing researchers to train or finetune their models in a standard Amazon Web Services environment. Researchers receive access to the full public dataset (including tested and untested patients), along with holdout ECG waveforms that lack labels or additional metadata. Models can be applied to these holdout waveforms to generate a CSV file of ECG IDs and predictions, which is then uploaded to the [Hugging Face leaderboard](https://huggingface.co/spaces/ngsci/ACSBenchmark). The platform evaluates the predictions against hidden labels, providing performance metrics for both ACS and MACE tasks.
 
 ## References
 
