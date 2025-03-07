@@ -287,6 +287,105 @@ class ResidualBlock(nn.Module):
         out = self.relu(out)
         return out
 
+#####################################
+########### ECG-OMI Model ###########
+#####################################
+
+class ECGOMI(Classifer):
+    """
+    Architecture:
+      conv (stride 2) -> 3 residual blocks ->
+      conv (stride 25) -> 3 residual blocks ->
+      flatten -> 2 FC layers
+      
+    Feature Extraction ~60k params  
+    Classification ~150k params
+
+    Input is assumed to be (batch_size, 3, 5000).
+    """
+    def __init__(self, num_classes=1, init_lr=1e-4, covars=[], input_length=5000):
+        super().__init__(num_classes=num_classes, init_lr=init_lr, covars=covars)
+        
+        # --- First Conv Layer ---
+        # in_channels=3, out_channels=24, kernel_size=7, stride=2 to reduce length
+        self.conv1 = nn.Conv1d(
+            in_channels=3,
+            out_channels=24,
+            kernel_size=7,
+            stride=2,
+            padding=3,
+            bias=True
+        )
+        self.bn1 = nn.BatchNorm1d(24)
+        
+        # --- 3 Residual Blocks (24 channels) ---
+        self.res_blocks_24 = nn.Sequential(*[ResidualBlock_omi(channels=24, kernel_size=3) for _ in range(3)])
+        
+        # --- Second Conv Layer ---
+        # in_channels=24, out_channels=48, kernel_size=7, stride=25 to reduce length from ~2500 to ~100.
+        self.conv2 = nn.Conv1d(
+            in_channels=24,
+            out_channels=48,
+            kernel_size=7,
+            stride=25,
+            padding=3,
+            bias=True
+        )
+        self.bn2 = nn.BatchNorm1d(48)
+        
+        # --- 3 Residual Blocks (48 channels) ---
+        self.res_blocks_48 = nn.Sequential(*[ResidualBlock_omi(channels=48, kernel_size=3) for _ in range(3)])
+        
+        # After the second conv layer:
+        #   Input length = 5000 → after conv1 (stride=2) → ~2500 → after conv2 (stride=25) → ~100.
+        # So final feature map shape is (batch, 48, 100) with 4800 features.
+        
+        # --- Classification ---
+        flattened_features = 48 * 100  # 4800 features after flattening.
+        hidden_dim = int(150000 // (4800 + 1))  # Approximately 31.
+        self.fc1 = nn.Linear(flattened_features, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, num_classes)
+
+    def forward(self, x):
+        """
+        Input shape: (batch_size, 3, 5000)
+        """
+        # First conv layer with stride 2: output shape (batch, 24, ~2500)
+        out = F.relu(self.bn1(self.conv1(x)))
+        # 3 residual blocks at 24 channels (preserve dimension)
+        out = self.res_blocks_24(out)
+        # Second conv layer with stride 25: reduces time dimension from ~2500 to ~100; output (batch, 48, 100)
+        out = F.relu(self.bn2(self.conv2(out)))
+        # 3 residual blocks at 48 channels (preserve dimension)
+        out = self.res_blocks_48(out)
+        # Flatten: from (batch, 48, 100) to (batch, 4800)
+        out = out.flatten(1)
+        # Two FC layers
+        out = F.relu(self.fc1(out))
+        out = self.fc2(out)
+        return out
+
+    
+class ResidualBlock_omi(nn.Module):
+    """
+    A standard 1D residual block:
+      Conv1d -> BatchNorm -> ReLU -> Conv1d -> BatchNorm -> Skip Connection -> ReLU
+    """
+    def __init__(self, channels, kernel_size=3):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv1 = nn.Conv1d(channels, channels, kernel_size, padding=padding, bias=True)
+        self.bn1 = nn.BatchNorm1d(channels)
+        self.conv2 = nn.Conv1d(channels, channels, kernel_size, padding=padding, bias=True)
+        self.bn2 = nn.BatchNorm1d(channels)
+
+    def forward(self, x):
+        residual = x
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        out = F.relu(out + residual)
+        return out
+
 #######################################
 ########### ResNet-18 Model ###########
 #######################################

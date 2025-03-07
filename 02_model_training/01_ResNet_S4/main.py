@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 os.environ["WANDB_MODE"] = "offline"
 
 NAME_TO_MODEL_CLASS = {
+    "ecgomi": ECGOMI,
     "resnet6": ResNet_6,
     "resnet18_1d": ResNet18_1D,
     "resnet50_1d": ResNet50_1D,
